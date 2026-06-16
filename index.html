@@ -60,7 +60,10 @@
 
   /* ===== Layout cours ===== */
   #view-cours{display:grid;grid-template-columns:300px 1fr;gap:28px;align-items:start}
-  @media(max-width:900px){#view-cours{grid-template-columns:1fr}}
+  @media(max-width:900px){
+    #view-cours{display:block}
+    #view-cours aside.sidebar{position:static;max-height:none;overflow:visible;margin-bottom:14px;padding-right:0}
+  }
 
   aside.sidebar{position:sticky;top:84px;max-height:calc(100vh - 110px);overflow-y:auto;padding-right:4px}
   .side-title{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:4px 0 10px 6px;font-weight:700}
@@ -166,6 +169,12 @@
   .cours h5{font-size:13.5px;margin:18px 0 8px;font-weight:700;color:#2f2f36}
   .cours ul,.cours ol{margin:0 0 13px 22px}
   .cours li{margin-bottom:6px}
+  .cours img{max-width:100%;height:auto;border-radius:8px;display:block;margin:12px auto;cursor:zoom-in}
+  body.editing .cours img{cursor:default}
+  #img-lightbox{position:fixed;inset:0;z-index:500;background:rgba(10,10,14,.93);display:none;align-items:center;justify-content:center;padding:24px;padding-top:calc(24px + env(safe-area-inset-top));padding-bottom:calc(24px + env(safe-area-inset-bottom));cursor:zoom-out}
+  #img-lightbox.open{display:flex}
+  #img-lightbox img{max-width:100%;max-height:100%;border-radius:10px;box-shadow:0 24px 70px rgba(0,0,0,.55);object-fit:contain}
+  #img-lightbox .ilb-close{position:absolute;top:calc(14px + env(safe-area-inset-top));right:18px;width:40px;height:40px;border-radius:50%;border:0;background:rgba(255,255,255,.15);color:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center}
   .cours table{border-collapse:collapse;margin:14px 0;font-size:13.5px;width:100%}
   .cours th,.cours td{border:1px solid var(--line);padding:8px 11px;text-align:left;vertical-align:top}
   .cours th{background:#faf9f6;font-weight:700}
@@ -230,6 +239,26 @@
   .rate-btn.rb1:hover,.rate-btn.rb1.sel{background:#fef3c7;border-color:#f59e0b;color:#92400e}
   .rate-btn.rb2:hover,.rate-btn.rb2.sel{background:#dcfce7;border-color:#22c55e;color:#15803d}
   .rate-btn.sel{font-weight:800}
+  .fc-smartbar{max-width:860px;margin:0 auto 16px}
+  .fc-smartbar-top{display:flex;justify-content:space-between;align-items:baseline;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:7px;gap:10px}
+  .fc-smartbar-track{height:8px;background:#eceae4;border-radius:999px;overflow:hidden}
+  .fc-smartbar-fill{height:100%;background:#22c55e;border-radius:999px;transition:width .35s}
+  .fc-focus{margin-top:9px;font-size:12.5px;color:#3f3f46;background:#f4f2ed;border:1px solid var(--line);border-radius:9px;padding:8px 12px;text-align:center}
+  /* Animations ludiques (flashcards) */
+  #fc-fx{position:fixed;inset:0;z-index:350;pointer-events:none;display:none}
+  #fc-fx.show{display:block}
+  .fx-badge{position:fixed;left:50%;top:42%;transform:translate(-50%,-50%) scale(0);font-size:56px;font-weight:800;width:108px;height:108px;border-radius:50%;display:flex;align-items:center;justify-content:center;animation:fxPop .8s cubic-bezier(.2,1.5,.4,1) forwards}
+  .fx-win{background:rgba(34,197,94,.16);color:#16a34a;box-shadow:0 0 0 5px rgba(34,197,94,.28)}
+  .fx-mid{background:rgba(245,158,11,.16);color:#d97706;box-shadow:0 0 0 5px rgba(245,158,11,.28)}
+  .fx-bad{background:rgba(239,68,68,.16);color:#dc2626;box-shadow:0 0 0 5px rgba(239,68,68,.28)}
+  @keyframes fxPop{0%{transform:translate(-50%,-50%) scale(0);opacity:0}28%{transform:translate(-50%,-50%) scale(1.12);opacity:1}72%{opacity:1}100%{transform:translate(-50%,-50%) scale(.85);opacity:0}}
+  .fx-streak{position:fixed;left:50%;top:calc(42% + 80px);transform:translateX(-50%);background:#1c1c20;color:#fff;font-size:13px;font-weight:700;padding:6px 14px;border-radius:999px;white-space:nowrap;animation:fxFade 1s ease forwards}
+  @keyframes fxFade{0%{opacity:0;transform:translate(-50%,8px)}25%{opacity:1;transform:translateX(-50%)}80%{opacity:1}100%{opacity:0;transform:translateX(-50%)}}
+  .fx-confetti{position:fixed;width:9px;height:9px;border-radius:2px;opacity:0;animation:fxConf .95s ease-out forwards}
+  @keyframes fxConf{0%{transform:translate(0,0) rotate(0);opacity:1}100%{transform:translate(var(--dx),var(--dy)) rotate(560deg);opacity:0}}
+  .fc-shake{animation:fcShakeAnim .5s cubic-bezier(.36,.07,.19,.97)}
+  @keyframes fcShakeAnim{10%,90%{transform:translateX(-3px)}20%,80%{transform:translateX(5px)}30%,50%,70%{transform:translateX(-9px)}40%,60%{transform:translateX(9px)}}
+  @media (prefers-reduced-motion: reduce){ .fx-badge,.fx-confetti,.fx-streak,.fc-shake{animation-duration:.01ms} }
   .fc-stats{text-align:center;font-size:12px;color:var(--muted);margin-top:12px}
   .fc-stats .reset-link{background:none;border:none;color:#a8a29e;font-size:11px;cursor:pointer;text-decoration:underline;font-family:var(--sans);margin-left:10px}
   .fc-stats .reset-link:hover{color:#78716c}
@@ -280,6 +309,9 @@
   .eb-reset{background:#3a3a3c;color:#fff}.eb-reset:hover{background:#4a4a4c}
   .eb-done{background:#22c55e;color:#fff}.eb-done:hover{background:#16a34a}
   body.editing .study-btn{display:none}
+  .obj-foot{padding:18px 30px 22px;display:flex;justify-content:center;border-top:1px solid var(--line)}
+  .obj-foot .study-btn{padding:10px 22px;font-size:13.5px}
+  body.editing .obj-foot{display:none}
   .eb-tools{display:flex;gap:4px;align-items:center;flex-wrap:wrap}
   #edit-bar .eb-tool{background:#3a3a3c;color:#fff;min-width:30px;height:30px;border-radius:8px;padding:0 7px;font-size:13.5px;display:inline-flex;align-items:center;justify-content:center;line-height:1}
   #edit-bar .eb-tool:hover{background:#52525b}
@@ -400,6 +432,9 @@
     <div class="fc-controls">
       <select id="fc-chap" onchange="fcChapChange()"></select>
       <select id="fc-obj" onchange="fcBuildDeck()"></select>
+      <button id="fc-smart" class="fc-toggle" onclick="fcToggleSmart()" title="Mélange les cartes ; une carte ne sort que si « J'avais bon ». Tu les vois toutes avant qu'une ne revienne.">
+        <span class="fc-toggle-dot"></span>🧠 Révision intelligente
+      </button>
       <button id="fc-retrav" class="fc-toggle" onclick="fcToggleRetrav()" title="Afficher uniquement les cartes évaluées Moyen ou Pas du tout">
         <span class="fc-toggle-dot"></span>Retravailler seulement
       </button>
@@ -3108,8 +3143,9 @@ function refreshStudied(){
       total++; if(is){ done++; cdone++; }
       const link = document.getElementById(`olink-${ci}-${oi}`);
       if(link) link.classList.toggle('studied', is);
-      const btn = document.getElementById(`studybtn-${ci}-${oi}`);
-      if(btn){ btn.classList.toggle('done', is); btn.innerHTML = is ? '✓ Étudié' : 'Marquer comme étudié'; }
+      document.querySelectorAll(`[data-study="${ci}-${oi}"]`).forEach(btn=>{
+        btn.classList.toggle('done', is); btn.innerHTML = is ? '✓ Étudié' : 'Marquer comme étudié';
+      });
     });
     const cp = document.getElementById('chprog-'+ci);
     if(cp){ cp.textContent = cdone+'/'+cn; cp.classList.toggle('done', cn>0 && cdone===cn); }
@@ -3131,18 +3167,22 @@ function saveEdits(){ try{ localStorage.setItem('ses-edits', JSON.stringify(EDIT
 function editOverride(key, def){ return (EDITS[key] != null) ? EDITS[key] : def; }
 let editMode = false, _focusedZone = null, _saveTimer = null;
 function toggleEdit(){
+  const sy = window.scrollY;   // on mémorise la position pour ne pas sauter en haut
   editMode = !editMode;
   document.body.classList.toggle('editing', editMode);
   const b = document.getElementById('edit-btn');
   if(b){ b.classList.toggle('on', editMode); b.textContent = editMode ? '✓ Terminer' : '✏️ Éditer'; }
   document.getElementById('edit-bar').classList.toggle('vis', editMode);
   if(editMode){
-    showTab('cours');
+    const onCours = document.getElementById('tab-cours').classList.contains('active');
+    if(!onCours) showTab('cours');   // n'appelle showTab (qui remet en haut) que si nécessaire
     if(currentChap == null && CH.length) toggleChap(0);
     try{ document.execCommand('styleWithCSS', false, true); }catch(e){}
     setEditStatus('');
   }
   if(currentChap != null) renderChapter(currentChap);  // ré-applique editable / surlignages proprement
+  window.scrollTo(0, sy);
+  requestAnimationFrame(()=> window.scrollTo(0, sy));
 }
 function applyEditable(){
   document.querySelectorAll('#content [data-ekey]').forEach(el=>{
@@ -3183,6 +3223,75 @@ function resetFocusedEdit(){
   renderChapter(currentChap);
   setEditStatus('Bloc réinitialisé');
 }
+
+/* ---------- Insertion d'images dans l'éditeur ---------- */
+let _imgRange = null;
+function imgBtnDown(e){
+  e.preventDefault();   // garde le focus/la sélection dans le bloc éditable
+  const sel = window.getSelection();
+  if(sel && sel.rangeCount && _focusedZone && _focusedZone.contains(sel.anchorNode)){
+    _imgRange = sel.getRangeAt(0).cloneRange();
+  } else { _imgRange = null; }
+}
+function pickImage(){
+  if(!editMode) return;
+  if(!_focusedZone){ alert('Clique d\'abord dans le bloc de cours, à l\'endroit où tu veux insérer l\'image.'); return; }
+  const inp = document.getElementById('img-input');
+  if(inp){ inp.value=''; inp.click(); }
+}
+function handleImageFile(file){
+  if(!file || !/^image\//.test(file.type)) return;
+  setEditStatus('Image…');
+  const reader = new FileReader();
+  reader.onload = function(){
+    const img = new Image();
+    img.onload = function(){
+      const MAX = 1000;
+      let w = img.width, h = img.height;
+      if(w > MAX){ h = Math.round(h * MAX / w); w = MAX; }
+      let url;
+      try{
+        const cv = document.createElement('canvas'); cv.width=w; cv.height=h;
+        cv.getContext('2d').drawImage(img, 0, 0, w, h);
+        url = cv.toDataURL('image/jpeg', 0.82);
+      }catch(e){ url = reader.result; }
+      insertImageDataUrl(url);
+    };
+    img.onerror = function(){ insertImageDataUrl(reader.result); };
+    img.src = reader.result;
+  };
+  reader.readAsDataURL(file);
+}
+function insertImageDataUrl(url){
+  const zone = _focusedZone || document.querySelector('#content [data-ekey]');
+  if(!zone){ return; }
+  const tag = '<img src="'+url+'" style="max-width:100%;height:auto;border-radius:8px;display:block;margin:12px auto">';
+  zone.focus();
+  let ok = false;
+  try{
+    if(_imgRange){ const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(_imgRange); }
+    ok = document.execCommand('insertHTML', false, tag);
+  }catch(e){}
+  if(!ok){ zone.insertAdjacentHTML('beforeend', tag); }
+  _imgRange = null;
+  scheduleSaveEdit(zone);
+  setEditStatus('Image ajoutée ✓');
+}
+
+/* ---------- Visionneuse plein écran (lightbox) ---------- */
+function openLightbox(src){
+  const lb = document.getElementById('img-lightbox');
+  if(!lb) return;
+  lb.querySelector('img').src = src;
+  lb.classList.add('open');
+}
+function closeLightbox(){
+  const lb = document.getElementById('img-lightbox');
+  if(!lb) return;
+  lb.classList.remove('open');
+  lb.querySelector('img').src = '';
+}
+
 function objMastery(ci,oi){
   const n = CH[ci].objectifs[oi].cards.length;
   let rated=0, sum=0;
@@ -3208,13 +3317,64 @@ function refreshMastery(){
     }
   }));
 }
+let fcStreak=0, _fcBusy=false;
 function rateCard(v){
+  if(_fcBusy) return;
+  if(smartMode){
+    if(!smartCur) return;
+    _fcBusy = true;
+    const card = smartCur, okey = card.ci+'-'+card.oi;
+    RATINGS[card.rid] = v;
+    saveRatings(); refreshMastery();
+    const sc = v===2 ? 1 : (v===1 ? 0.5 : 0);          // score pour le modèle
+    const st = smartStats[okey] || (smartStats[okey] = {n:0, s:0});
+    st.n++; st.s += sc;
+    if(v===2){ const idx = smartPool.indexOf(card); if(idx>-1) smartPool.splice(idx,1); } // acquise → sort du paquet
+    smartLastChap = card.ci;
+    if(v===2) fcStreak++; else fcStreak=0;
+    fcFeedback(v);
+    smartCur = smartPick();                             // prochaine carte choisie par le modèle
+    setTimeout(()=>{ flipped=false; fcRender(); _fcBusy=false; }, 560);
+    return;
+  }
   if(!deck.length) return;
+  _fcBusy = true;
   const card = deck[deckIdx];
   RATINGS[card.rid] = v;
   saveRatings(); refreshMastery();
-  fcRender();
-  if(deck.length>1) setTimeout(()=>{ if(RATINGS[deck[deckIdx].rid]===v) fcNext(); }, 450);
+  if(v===2) fcStreak++; else fcStreak=0;
+  fcFeedback(v);
+  setTimeout(()=>{ flipped=false; if(deck.length>1) fcNext(); else fcRender(); _fcBusy=false; }, 560);
+}
+/* ---------- Animations ludiques ---------- */
+function fcFeedback(v){ if(v===2) fcCelebrate(); else fcShake(v); }
+function fcCelebrate(){
+  const fx=document.getElementById('fc-fx'); if(!fx) return;
+  const stage=document.querySelector('.fc-stage');
+  let cx=(window.innerWidth||800)/2, cy=(window.innerHeight||600)*0.42;
+  if(stage && stage.getBoundingClientRect){ const r=stage.getBoundingClientRect(); cx=r.left+r.width/2; cy=r.top+r.height/2; }
+  let html='<div class="fx-badge fx-win">✓</div>';
+  if(fcStreak>=2) html+='<div class="fx-streak">🔥 Série de '+fcStreak+'</div>';
+  fx.innerHTML=html;
+  const colors=['#22c55e','#4f46e5','#f59e0b','#e11d48','#0891b2','#fde047'];
+  for(let i=0;i<20;i++){
+    const p=document.createElement('div'); p.className='fx-confetti';
+    p.style.left=cx+'px'; p.style.top=cy+'px'; p.style.background=colors[i%colors.length];
+    const ang=Math.random()*Math.PI*2, dist=90+Math.random()*170;
+    if(p.style.setProperty){ p.style.setProperty('--dx',Math.round(Math.cos(ang)*dist)+'px'); p.style.setProperty('--dy',Math.round(Math.sin(ang)*dist-40)+'px'); }
+    p.style.animationDelay=Math.round(Math.random()*80)+'ms';
+    fx.appendChild(p);
+  }
+  fx.classList.add('show');
+  setTimeout(()=>{ fx.classList.remove('show'); fx.innerHTML=''; }, 950);
+}
+function fcShake(v){
+  const stage=document.querySelector('.fc-stage');
+  if(stage && stage.classList){ stage.classList.remove('fc-shake'); void stage.offsetWidth; stage.classList.add('fc-shake'); setTimeout(()=>stage.classList.remove('fc-shake'),520); }
+  const fx=document.getElementById('fc-fx'); if(!fx) return;
+  fx.innerHTML='<div class="fx-badge '+(v===1?'fx-mid':'fx-bad')+'">'+(v===1?'~':'✗')+'</div>';
+  fx.classList.add('show');
+  setTimeout(()=>{ fx.classList.remove('show'); fx.innerHTML=''; }, 720);
 }
 function resetRatings(){
   if(!confirm('Effacer toutes tes évaluations de flashcards ?')) return;
@@ -3290,7 +3450,7 @@ function renderChapter(ci){
         <div class="obj-head-row">
           <div class="k" style="color:${c.color}">Objectif ${o.num}</div>
           <div class="obj-head-badges">
-            <button class="study-btn" id="studybtn-${ci}-${oi}" onclick="toggleStudied(${ci},${oi})">Marquer comme étudié</button>
+            <button class="study-btn" data-study="${ci}-${oi}" onclick="toggleStudied(${ci},${oi})">Marquer comme étudié</button>
             <span class="mpill" id="mpill-${ci}-${oi}"></span>
           </div>
         </div>
@@ -3303,6 +3463,7 @@ function renderChapter(ci){
       <div class="bloc"><span class="bloc-tag b3">Bloc 3 — Sujets tombés sur cet objectif</span>
         ${sujets}</div>
       ${trameHtml}
+      <div class="obj-foot"><button class="study-btn" data-study="${ci}-${oi}" onclick="toggleStudied(${ci},${oi})">Marquer comme étudié</button></div>
     </article>`;
   });
   document.getElementById('content').innerHTML = html;
@@ -3328,12 +3489,80 @@ function renderWelcome(){
 
 /* ---------- Flashcards ---------- */
 let deck=[], deckIdx=0, flipped=false, fcRetrav=false;
+let smartMode=false, smartTotal=0;
+let smartPool=[], smartCur=null, smartPhase='sweep', smartSweep=[], smartSweepTotal=0, smartLastChap=null, smartStats={};
+function _shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
 
 function fcToggleRetrav(){
   fcRetrav = !fcRetrav;
   document.getElementById('fc-retrav').classList.toggle('on', fcRetrav);
   fcBuildDeck();
 }
+function fcToggleSmart(){
+  smartMode = !smartMode;
+  document.getElementById('fc-smart').classList.toggle('on', smartMode);
+  fcBuildDeck();
+}
+
+/* ====== Modèle adaptatif (les « maths ») ======
+   - Maîtrise estimée par objectif = moyenne lissée Beta(1,1) des scores (✓=1, ~=0,5, ✗=0).
+   - Phase 1 « diagnostic » : 1 carte par chapitre (ou par objectif si un seul chapitre) → survol complet.
+   - Phase 2 « adaptatif » : tirage aléatoire pondéré par le besoin (1 − maîtrise) + bonus d'exploration
+     pour les objectifs jamais vus, en évitant d'enchaîner le même chapitre (dispersion). */
+function objMasteryEst(okey){ const st=smartStats[okey]; const n=st?st.n:0, s=st?st.s:0; return (s+1)/(n+2); }
+function cardWeight(card){
+  const okey = card.ci+'-'+card.oi;
+  const st = smartStats[okey];
+  let w = 0.15 + (1 - objMasteryEst(okey));   // plus la maîtrise est basse, plus le poids est élevé
+  if(!st || st.n===0) w += 0.6;               // objectif jamais évalué → exploration / dispersion
+  if(card.ci === smartLastChap) w *= 0.4;     // évite d'enchaîner deux cartes du même chapitre
+  return Math.max(w, 0.02);
+}
+function _weightedPick(cands){
+  const ws = cands.map(cardWeight);
+  let tot = ws.reduce((a,b)=>a+b,0), r = Math.random()*tot;
+  for(let i=0;i<cands.length;i++){ r-=ws[i]; if(r<=0) return cands[i]; }
+  return cands[cands.length-1];
+}
+function _buildSweep(d){
+  const multiChap = new Set(d.map(c=>c.ci)).size > 1;
+  const groups = {};
+  d.forEach(c=>{ const g = multiChap ? ('c'+c.ci) : (c.ci+'-'+c.oi); (groups[g]||(groups[g]=[])).push(c); });
+  return _shuffle(Object.keys(groups).map(g=>{ const arr=groups[g]; return arr[Math.floor(Math.random()*arr.length)]; }));
+}
+function smartPick(){
+  if(!smartPool.length) return null;
+  if(smartPhase==='sweep'){
+    while(smartSweep.length){ const c=smartSweep.shift(); if(smartPool.indexOf(c)>-1) return c; }
+    smartPhase='adaptive';
+  }
+  let cands = smartPool.filter(c=>c!==smartCur);
+  if(!cands.length) cands = smartPool.slice();
+  return _weightedPick(cands);
+}
+function smartInit(){
+  smartPool = deck.slice();
+  smartTotal = deck.length;
+  smartStats = {};
+  smartLastChap = null;
+  smartPhase = 'sweep';
+  smartSweep = _buildSweep(deck);
+  smartSweepTotal = smartSweep.length;
+  smartCur = smartPick();
+  flipped = false;
+}
+function smartFocus(){
+  const agg={};
+  Object.keys(smartStats).forEach(k=>{ const ci=k.split('-')[0]; (agg[ci]||(agg[ci]={sum:0,n:0})); agg[ci].sum+=objMasteryEst(k); agg[ci].n++; });
+  const keys=Object.keys(agg);
+  if(!keys.length) return 'On sonde encore tes chapitres…';
+  let worst=null, worstM=2;
+  keys.forEach(ci=>{ const avg=agg[ci].sum/agg[ci].n; if(avg<worstM){ worstM=avg; worst=ci; } });
+  if(worstM>=0.8) return '✓ Bon niveau global jusqu\'ici — on continue à varier.';
+  return `🎯 Zone à creuser : <b>Chapitre ${CH[+worst].id}</b> — ${CH[+worst].title}`;
+}
+function fcSkip(){ if(!smartMode) return; smartLastChap = smartCur?smartCur.ci:smartLastChap; smartCur = smartPick(); flipped=false; fcRender(); }
+function fcRestartSmart(){ smartInit(); fcRender(); }
 function fcInit(){
   const sc=document.getElementById('fc-chap');
   sc.innerHTML = `<option value="all">Tous les chapitres</option>` +
@@ -3362,13 +3591,16 @@ function fcBuildDeck(){
       o.cards.forEach((card,k)=>{
         const rid=`${i}-${j}-${k}`;
         if(fcRetrav && RATINGS[rid]!==0 && RATINGS[rid]!==1) return;
-        deck.push({...card, rid, color:c.color, chap:`Chapitre ${c.id}`, obj:`Objectif ${o.num} — ${o.short}`});
+        deck.push({...card, rid, ci:i, oi:j, color:c.color, chap:`Chapitre ${c.id}`, obj:`Objectif ${o.num} — ${o.short}`});
       });
     });
   });
-  deckIdx=0; flipped=false; fcRender();
+  deckIdx=0; flipped=false;
+  if(smartMode){ smartInit(); }
+  fcRender();
 }
 function fcRender(){
+  if(smartMode){ fcRenderSmart(); return; }
   const area=document.getElementById('fc-area');
   if(!deck.length){
     area.innerHTML = fcRetrav
@@ -3407,6 +3639,58 @@ function fcRender(){
    </div>
    <div class="fc-stats">${fcStats()}<button class="reset-link" onclick="resetRatings()">réinitialiser mes évaluations</button></div>`;
 }
+function fcRenderSmart(){
+  const area=document.getElementById('fc-area');
+  if(!deck.length){
+    area.innerHTML = fcRetrav
+      ? `<div class="fc-empty">Toutes les cartes de cette sélection sont acquises — rien à retravailler&nbsp;!</div>`
+      : `<div class="fc-empty">Aucune flashcard pour cette sélection.</div>`;
+    return;
+  }
+  if(!smartCur || !smartPool.length){
+    area.innerHTML = `<div class="fc-empty">🎉 Bravo&nbsp;! Tu as révisé l'intégralité des ${smartTotal} cartes de cette sélection.<div style="margin-top:18px"><button class="fc-btn primary" onclick="fcRestartSmart()">↻ Recommencer une session</button></div></div>`;
+    return;
+  }
+  const c=smartCur;
+  const done=smartTotal-smartPool.length;
+  const pct=smartTotal?Math.round(done/smartTotal*100):0;
+  const sweepDone=smartSweepTotal-smartSweep.length;
+  const phaseLabel = smartPhase==='sweep'
+    ? `🔎 Diagnostic — survol des chapitres (${sweepDone}/${smartSweepTotal})`
+    : `🎯 Ciblage adaptatif`;
+  const focus = smartPhase==='adaptive' ? `<div class="fc-focus">${smartFocus()}</div>` : '';
+  area.innerHTML = `
+   <div class="fc-smartbar">
+     <div class="fc-smartbar-top"><span>${phaseLabel}</span><span>${done} / ${smartTotal} acquise${done>1?'s':''} · ${smartPool.length} restante${smartPool.length>1?'s':''}</span></div>
+     <div class="fc-smartbar-track"><div class="fc-smartbar-fill" style="width:${pct}%"></div></div>
+     ${focus}
+   </div>
+   <div class="fc-stage">
+    <div class="fc-card ${flipped?'flipped':''}" id="fc-card" onclick="fcFlip()">
+      <div class="fc-face fc-front">
+        <div class="fc-chap" style="color:${c.color}">${c.chap}</div>
+        <div class="fc-obj">${c.obj}</div>
+        <div class="fc-q">${c.q}</div>
+        <div class="fc-hint">Cliquer pour voir la réponse, puis note-toi</div>
+      </div>
+      <div class="fc-face fc-back" style="background:${c.color}14;border-color:${c.color}55">
+        <div class="fc-q2" style="color:${c.color}">${c.q}</div>
+        <div class="fc-a">${c.a}</div>
+      </div>
+    </div>
+   </div>
+   <div class="fc-nav">
+     <button class="fc-btn primary" onclick="fcFlip()">Retourner</button>
+     <button class="fc-btn" onclick="fcSkip()">Passer cette carte →</button>
+   </div>
+   <div class="fc-rate">
+     <span class="rate-label">Je maîtrise&nbsp;:</span>
+     <button class="rate-btn rb0" onclick="rateCard(0)" title="Touche 1">✗ Pas du tout</button>
+     <button class="rate-btn rb1" onclick="rateCard(1)" title="Touche 2">~ Moyen</button>
+     <button class="rate-btn rb2" onclick="rateCard(2)" title="Touche 3">✓ J'avais bon</button>
+   </div>
+   <div class="fc-stats">Une carte ne quitte le paquet que si tu réponds <b style="color:#15803d">« J'avais bon »</b>. Les <b style="color:#92400e">« moyen »</b> et <b style="color:#b91c1c">« pas du tout »</b> reviennent après toutes les autres.<button class="reset-link" onclick="resetRatings()">réinitialiser mes évaluations</button></div>`;
+}
 function fcStats(){
   let bad=0, mid=0, good=0, none=0;
   deck.forEach(d=>{
@@ -3421,8 +3705,8 @@ function fcNext(){ deckIdx=(deckIdx+1)%deck.length; flipped=false; fcRender(); }
 document.addEventListener('keydown',e=>{
   if(document.getElementById('view-flash').style.display!=='block') return;
   if(e.target && e.target.tagName==='INPUT') return;
-  if(e.key==='ArrowRight') fcNext();
-  else if(e.key==='ArrowLeft') fcPrev();
+  if(e.key==='ArrowRight'){ smartMode ? fcSkip() : fcNext(); }
+  else if(e.key==='ArrowLeft'){ if(!smartMode) fcPrev(); }
   else if(e.key===' '||e.key==='Enter'){ e.preventDefault(); fcFlip(); }
   else if(e.key==='1') rateCard(0);
   else if(e.key==='2') rateCard(1);
@@ -3800,6 +4084,16 @@ function _accountBoot(){
 }
 // Fermer la modale au clic sur le fond (délégation : la modale est insérée après ce script)
 document.addEventListener('click', e=>{ if(e.target && e.target.id==='acct-modal') closeAccount(); });
+// Sélecteur d'image de l'éditeur (délégation : l'input est inséré après ce script)
+document.addEventListener('change', e=>{ if(e.target && e.target.id==='img-input' && e.target.files && e.target.files[0]) handleImageFile(e.target.files[0]); });
+// Visionneuse plein écran : clic sur une image du cours (hors édition) ; clic dans la visionneuse pour fermer
+document.addEventListener('click', e=>{
+  if(!e.target || !e.target.closest) return;
+  if(e.target.closest('#img-lightbox')){ closeLightbox(); return; }
+  const im = e.target.closest('.cours img');
+  if(im && !editMode) openLightbox(im.getAttribute('src'));
+});
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeLightbox(); });
 
 /* ---------- Édition : écouteurs délégués (le conteneur #content persiste) ---------- */
 (function(){
@@ -3840,13 +4134,22 @@ buildSidebar(); renderWelcome(); fcInit(); buildSearchIndex(); refreshMastery();
     <button class="eb-tool eb-tool-sm" onmousedown="event.preventDefault()" onclick="fmt('formatBlock','h5')" title="Sous-titre">t</button>
     <button class="eb-tool" onmousedown="event.preventDefault()" onclick="fmt('insertUnorderedList')" title="Liste à puces">☰</button>
     <button class="eb-tool eb-hl" onmousedown="event.preventDefault()" onclick="fmtHilite()" title="Surligner en jaune">🖍</button>
+    <button class="eb-tool" onmousedown="imgBtnDown(event)" onclick="pickImage()" title="Insérer une image">🖼</button>
     <button class="eb-tool" onmousedown="event.preventDefault()" onclick="fmt('formatBlock','p')" title="Texte normal">¶</button>
     <button class="eb-tool" onmousedown="event.preventDefault()" onclick="fmt('removeFormat')" title="Effacer la mise en forme">⌫</button>
   </div>
+  <input type="file" accept="image/*" id="img-input" style="display:none">
   <span class="eb-sep"></span>
   <span class="eb-status" id="edit-status"></span>
   <button class="eb-reset" onclick="resetFocusedEdit()">↺ Réinitialiser</button>
   <button class="eb-done" onclick="toggleEdit()">Terminer</button>
 </div>
+
+<div id="img-lightbox">
+  <button class="ilb-close" onclick="closeLightbox()" aria-label="Fermer">✕</button>
+  <img alt="">
+</div>
+
+<div id="fc-fx"></div>
 </body>
 </html>
