@@ -1,0 +1,10 @@
+.DS_Store
+firebase-debug.log
+firebase-debug.*.log
+.firebase/
+
+# Sources contenant les cours complets : ne jamais publier.
+legacy/
+_txt/
+_txt2/
+firebase-site/tools/
