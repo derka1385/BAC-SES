@@ -364,14 +364,30 @@
   text-transform: uppercase;
 }
 
-.teacher-btn {
+.acct-btn.teacher-btn {
+  min-height: 44px;
   border-color: rgba(79, 70, 229, .28);
+  background: rgba(79, 70, 229, .08);
   color: #4338ca;
+  white-space: nowrap;
 }
+
+.acct-btn.teacher-btn:hover { border-color: #8d87e7; background: rgba(79, 70, 229, .13); }
+.teacher-btn svg { flex: none; }
 
 .teacher-btn[hidden] { display: none; }
 
-.teacher-card { max-width: 620px; }
+.acct-card.teacher-card { max-width: 680px; }
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  clip-path: inset(50%);
+}
 
 .teacher-heading {
   display: flex;
@@ -402,17 +418,48 @@
   font-weight: 700;
 }
 
+.teacher-select-all {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  width: fit-content;
+  margin: 0 0 7px;
+  padding: 7px 9px;
+  border-radius: 10px;
+  color: #4338ca;
+  font-size: 12.5px;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.teacher-select-all:hover { background: rgba(79, 70, 229, .07); }
+
+.teacher-select-all input,
+.release-checkbox {
+  width: 20px;
+  height: 20px;
+  flex: none;
+  margin: 0;
+  accent-color: #4f46e5;
+  cursor: pointer;
+}
+
 .release-list {
   display: grid;
   gap: 8px;
+  min-width: 0;
   margin-top: 8px;
+  padding: 0;
+  border: 0;
 }
 
 .release-row {
   display: grid;
-  grid-template-columns: 38px minmax(0, 1fr) auto;
+  grid-template-columns: 22px 38px minmax(0, 1fr) auto;
   align-items: center;
   gap: 11px;
+  min-height: 58px;
   width: 100%;
   padding: 11px 12px;
   border: 1px solid var(--line);
@@ -421,15 +468,18 @@
   color: var(--ink);
   text-align: left;
   cursor: pointer;
-  transition: border-color .15s, background .15s, transform .15s;
+  transition: border-color .18s, background .18s, box-shadow .18s;
 }
 
 .release-row:hover {
   border-color: #b9b5ef;
-  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(49, 46, 129, .07);
 }
 
-.release-row:focus-visible,
+.release-checkbox:focus-visible,
+.teacher-select-all input:focus-visible,
+.teacher-save:focus-visible,
+.teacher-cancel:focus-visible,
 .acct-card button:focus-visible,
 .acct-card input:focus-visible {
   outline: 3px solid rgba(79, 70, 229, .28);
@@ -475,6 +525,47 @@
 
 .released .release-state { background: #dcfce7; color: #166534; }
 
+.release-list:disabled {
+  opacity: .58;
+  cursor: wait;
+}
+
+.release-list:disabled .release-row,
+.release-list:disabled .release-checkbox { cursor: wait; }
+
+.teacher-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+
+.teacher-actions button {
+  min-height: 44px;
+  padding: 10px 17px;
+  border-radius: 11px;
+  font: 750 13px var(--sans);
+  cursor: pointer;
+}
+
+.teacher-cancel {
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+}
+
+.teacher-save {
+  min-width: 122px;
+  border: 1px solid #4338ca;
+  background: #4338ca;
+  color: #fff;
+}
+
+.teacher-save:hover:not(:disabled) { background: #3730a3; }
+.teacher-save:disabled { border-color: #d6d3d1; background: #e7e5e4; color: #8b8986; cursor: not-allowed; }
+
 .teacher-empty {
   margin: 18px 0;
   padding: 18px;
@@ -494,13 +585,16 @@
 }
 
 @media (max-width: 560px) {
-  .teacher-card { padding: 24px 18px; }
+  .acct-card.teacher-card { padding: 24px 18px; }
   .teacher-heading { display: block; }
   .teacher-heading .role-badge { margin-top: 8px; }
-  .release-row { grid-template-columns: 34px minmax(0, 1fr); }
-  .release-state { grid-column: 2; justify-self: start; }
+  .release-row { grid-template-columns: 22px 34px minmax(0, 1fr); }
+  .release-state { grid-column: 3; justify-self: start; }
+  .teacher-actions { position: sticky; bottom: -24px; margin-inline: -18px; padding: 14px 18px calc(14px + env(safe-area-inset-bottom)); background: rgba(255,255,255,.96); }
+  .teacher-actions button { flex: 1; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .release-row { transition: none; }
+  .release-row,
+  .teacher-btn { transition: none; }
 }

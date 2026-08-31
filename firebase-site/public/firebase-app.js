@@ -472,9 +472,12 @@ function ensureTeacherUI() {
     button.className = "acct-btn teacher-btn";
     button.type = "button";
     button.hidden = true;
-    button.innerHTML = '<span aria-hidden="true">🎓</span> Professeur';
+    button.innerHTML = `<svg aria-hidden="true" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M4 5.5h16M6.5 3v5M17.5 3v5M5 9.5h14v10.5H5z"/>
+      <path d="m8 14 2.2 2.2L16 11"/>
+    </svg><span>Gestion des chapitres</span>`;
     button.addEventListener("click", window.openTeacherPanel);
-    document.getElementById("acct-btn")?.after(button);
+    document.getElementById("acct-btn")?.before(button);
   }
 
   if (!document.getElementById("teacher-modal")) {
@@ -500,27 +503,91 @@ function ensureTeacherUI() {
 function renderTeacherPanel() {
   const body = document.getElementById("teacher-body");
   if (!body) return;
-  const releasedThrough = chapters.filter((chapter) => chapter.released).reduce((max, chapter) => Math.max(max, chapter.id), 0);
+  const releasedCount = chapters.filter((chapter) => chapter.released).length;
   body.innerHTML = `
     <div class="teacher-heading">
       <div>
         <span class="teacher-kicker">Espace professeur</span>
-        <h3 id="teacher-title">Publication des chapitres</h3>
+        <h3 id="teacher-title">Gestion des chapitres</h3>
       </div>
-      <span class="role-badge">${releasedThrough}/9 publiés</span>
+      <span class="role-badge" id="teacher-count">${releasedCount}/${chapters.length || 9} publiés</span>
     </div>
-    <p class="acct-sub">Publie les chapitres au fil de l’année. La progression reste séquentielle : publier un chapitre publie aussi tous les précédents.</p>
+    <p class="acct-sub">Coche les chapitres que les élèves peuvent consulter, puis enregistre les changements.</p>
     <div class="teacher-status" role="status" aria-live="polite" id="teacher-status"></div>
-    ${chapters.length ? `<div class="release-list">${chapters.map((chapter) => {
+    ${chapters.length ? `<form id="teacher-release-form" onsubmit="teacherSaveChapterSelection(event)">
+      <label class="teacher-select-all" for="teacher-select-all">
+        <input id="teacher-select-all" type="checkbox" onchange="teacherToggleAll(this.checked)">
+        <span>Tout sélectionner</span>
+      </label>
+      <fieldset class="release-list" id="teacher-release-list">
+        <legend class="sr-only">Chapitres visibles par les élèves</legend>
+        ${chapters.map((chapter) => {
       const released = Boolean(chapter.released);
-      return `<button type="button" class="release-row ${released ? "released" : "locked"}" aria-pressed="${released}" onclick="teacherPublishThrough(${released ? chapter.id - 1 : chapter.id})">
+      return `<label class="release-row ${released ? "released" : "locked"}">
+        <input class="release-checkbox" type="checkbox" data-chapter-id="${chapter.id}" ${released ? "checked" : ""} onchange="teacherSelectionChanged()">
         <span class="release-number">${chapter.id}</span>
         <span class="release-copy"><strong>Chapitre ${chapter.id}</strong><small>${escapeHtml(chapter.title)}</small></span>
-        <span class="release-state">${released ? "Publié" : "Verrouillé"}</span>
-      </button>`;
-    }).join("")}</div>` : '<div class="teacher-empty"><strong>Aucun chapitre importé.</strong><br>Utilise l’outil local d’import initial fourni avec le projet.</div>'}
-    <p class="teacher-help">Cliquer sur un chapitre publié le reverrouille, ainsi que les chapitres suivants.</p>`;
+        <span class="release-state">${released ? "Visible" : "Masqué"}</span>
+      </label>`;
+    }).join("")}
+      </fieldset>
+      <div class="teacher-actions">
+        <button class="teacher-cancel" type="button" onclick="closeTeacherPanel()">Annuler</button>
+        <button class="teacher-save" id="teacher-save" type="submit" disabled>Enregistrer</button>
+      </div>
+    </form>` : '<div class="teacher-empty"><strong>Aucun chapitre importé.</strong><br>Utilise l’outil local d’import initial fourni avec le projet.</div>'}
+    <p class="teacher-help">Les élèves ne voient que les chapitres cochés. Tu peux modifier cette sélection à tout moment.</p>`;
+
+  updateTeacherSelectionUI();
 }
+
+function teacherSelection() {
+  return new Map(
+    [...document.querySelectorAll("#teacher-release-list .release-checkbox")]
+      .map((checkbox) => [Number(checkbox.dataset.chapterId), checkbox.checked]),
+  );
+}
+
+function updateTeacherSelectionUI() {
+  const selection = teacherSelection();
+  const checkboxes = [...document.querySelectorAll("#teacher-release-list .release-checkbox")];
+  const selectedCount = checkboxes.filter((checkbox) => checkbox.checked).length;
+  checkboxes.forEach((checkbox) => {
+    const row = checkbox.closest(".release-row");
+    const state = row?.querySelector(".release-state");
+    row?.classList.toggle("released", checkbox.checked);
+    row?.classList.toggle("locked", !checkbox.checked);
+    if (state) state.textContent = checkbox.checked ? "Visible" : "Masqué";
+  });
+
+  const count = document.getElementById("teacher-count");
+  if (count) count.textContent = `${selectedCount}/${checkboxes.length || 9} sélectionnés`;
+
+  const selectAll = document.getElementById("teacher-select-all");
+  if (selectAll) {
+    selectAll.checked = checkboxes.length > 0 && selectedCount === checkboxes.length;
+    selectAll.indeterminate = selectedCount > 0 && selectedCount < checkboxes.length;
+  }
+
+  const dirty = chapters.some(
+    (chapter) => Boolean(chapter.released) !== Boolean(selection.get(chapter.id)),
+  );
+  const save = document.getElementById("teacher-save");
+  if (save) save.disabled = !dirty;
+}
+
+window.teacherSelectionChanged = function teacherSelectionChanged() {
+  updateTeacherSelectionUI();
+  const status = document.getElementById("teacher-status");
+  if (status) status.textContent = "Modifications non enregistrées.";
+};
+
+window.teacherToggleAll = function teacherToggleAll(checked) {
+  document.querySelectorAll("#teacher-release-list .release-checkbox").forEach((checkbox) => {
+    checkbox.checked = checked;
+  });
+  window.teacherSelectionChanged();
+};
 
 window.openTeacherPanel = function openTeacherPanel() {
   if (!isTeacher) return;
@@ -532,12 +599,21 @@ window.closeTeacherPanel = function closeTeacherPanel() {
   closeModal(document.getElementById("teacher-modal"), teacherTrigger);
 };
 
-window.teacherPublishThrough = async function teacherPublishThrough(chapterId) {
+window.teacherSaveChapterSelection = async function teacherSaveChapterSelection(event) {
+  event?.preventDefault();
   if (!isTeacher || !currentUser) return;
   const status = document.getElementById("teacher-status");
-  const controls = [...document.querySelectorAll("#teacher-body .release-row")];
-  controls.forEach((control) => { control.disabled = true; });
-  if (status) status.textContent = "Publication en cours…";
+  const fieldset = document.getElementById("teacher-release-list");
+  const selectAll = document.getElementById("teacher-select-all");
+  const saveButton = document.getElementById("teacher-save");
+  const selection = teacherSelection();
+  if (fieldset) fieldset.disabled = true;
+  if (selectAll) selectAll.disabled = true;
+  if (saveButton) {
+    saveButton.disabled = true;
+    saveButton.textContent = "Enregistrement…";
+  }
+  if (status) status.textContent = "Enregistrement en cours…";
   try {
     const roleStillValid = await readTeacherRole(currentUser);
     if (!roleStillValid) {
@@ -549,7 +625,7 @@ window.teacherPublishThrough = async function teacherPublishThrough(chapterId) {
     }
 
     const changedChapters = chapters.filter(
-      (chapter) => Boolean(chapter.released) !== (chapter.id <= chapterId),
+      (chapter) => Boolean(chapter.released) !== Boolean(selection.get(chapter.id)),
     );
     if (!changedChapters.length) {
       if (status) status.textContent = "Les chapitres sont déjà configurés ainsi.";
@@ -559,7 +635,7 @@ window.teacherPublishThrough = async function teacherPublishThrough(chapterId) {
     const batch = writeBatch(db);
     changedChapters.forEach((chapter) => {
       batch.update(doc(db, "chapters", chapter._firestoreId || String(chapter.id)), {
-        released: chapter.id <= chapterId,
+        released: Boolean(selection.get(chapter.id)),
         updatedAt: serverTimestamp(),
       });
     });
@@ -568,7 +644,7 @@ window.teacherPublishThrough = async function teacherPublishThrough(chapterId) {
     window.replaceSESChapters?.(chapters);
     renderTeacherPanel();
     const freshStatus = document.getElementById("teacher-status");
-    if (freshStatus) freshStatus.textContent = chapterId > 0 ? `Chapitres 1 à ${chapterId} publiés.` : "Tous les chapitres sont verrouillés.";
+    if (freshStatus) freshStatus.textContent = `${changedChapters.length} modification${changedChapters.length > 1 ? "s" : ""} enregistrée${changedChapters.length > 1 ? "s" : ""}.`;
   } catch (error) {
     console.error("Publication Firebase :", error);
     if (status) {
@@ -583,7 +659,12 @@ window.teacherPublishThrough = async function teacherPublishThrough(chapterId) {
       }
     }
   } finally {
-    controls.forEach((control) => { control.disabled = false; });
+    if (fieldset?.isConnected) fieldset.disabled = false;
+    if (selectAll?.isConnected) selectAll.disabled = false;
+    if (saveButton?.isConnected) {
+      saveButton.textContent = "Enregistrer";
+      updateTeacherSelectionUI();
+    }
   }
 };
 
