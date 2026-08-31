@@ -457,7 +457,10 @@ async function readChapters() {
     : query(collection(db, "chapters"), where("released", "==", true));
   const snapshot = await getDocs(source);
   return snapshot.docs
-    .map((chapter) => chapter.data())
+    .map((chapterSnapshot) => ({
+      ...chapterSnapshot.data(),
+      _firestoreId: chapterSnapshot.id,
+    }))
     .filter((chapter) => Number.isFinite(chapter.id))
     .sort((a, b) => a.id - b.id);
 }
@@ -530,13 +533,32 @@ window.closeTeacherPanel = function closeTeacherPanel() {
 };
 
 window.teacherPublishThrough = async function teacherPublishThrough(chapterId) {
-  if (!isTeacher) return;
+  if (!isTeacher || !currentUser) return;
   const status = document.getElementById("teacher-status");
+  const controls = [...document.querySelectorAll("#teacher-body .release-row")];
+  controls.forEach((control) => { control.disabled = true; });
   if (status) status.textContent = "Publication en cours…";
   try {
+    const roleStillValid = await readTeacherRole(currentUser);
+    if (!roleStillValid) {
+      isTeacher = false;
+      updateAccountButton();
+      const roleError = new Error("Le rôle professeur n’est plus attribué à ce compte.");
+      roleError.code = "ses/teacher-role-missing";
+      throw roleError;
+    }
+
+    const changedChapters = chapters.filter(
+      (chapter) => Boolean(chapter.released) !== (chapter.id <= chapterId),
+    );
+    if (!changedChapters.length) {
+      if (status) status.textContent = "Les chapitres sont déjà configurés ainsi.";
+      return;
+    }
+
     const batch = writeBatch(db);
-    chapters.forEach((chapter) => {
-      batch.update(doc(db, "chapters", String(chapter.id)), {
+    changedChapters.forEach((chapter) => {
+      batch.update(doc(db, "chapters", chapter._firestoreId || String(chapter.id)), {
         released: chapter.id <= chapterId,
         updatedAt: serverTimestamp(),
       });
@@ -549,7 +571,19 @@ window.teacherPublishThrough = async function teacherPublishThrough(chapterId) {
     if (freshStatus) freshStatus.textContent = chapterId > 0 ? `Chapitres 1 à ${chapterId} publiés.` : "Tous les chapitres sont verrouillés.";
   } catch (error) {
     console.error("Publication Firebase :", error);
-    if (status) status.textContent = "La publication a échoué. Vérifie les règles Firestore.";
+    if (status) {
+      if (error?.code === "ses/teacher-role-missing") {
+        status.textContent = "Rôle professeur introuvable. Vérifie le nouvel UID dans roles.";
+      } else if (error?.code === "permission-denied") {
+        status.textContent = "Firestore refuse la publication. Redéploie firestore.rules et vérifie roles/{UID}.role = teacher.";
+      } else if (error?.code === "not-found") {
+        status.textContent = "Un document de chapitre est introuvable dans Firestore.";
+      } else {
+        status.textContent = `La publication a échoué${error?.code ? ` (${error.code})` : ""}.`;
+      }
+    }
+  } finally {
+    controls.forEach((control) => { control.disabled = false; });
   }
 };
 

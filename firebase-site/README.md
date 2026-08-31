@@ -38,3 +38,6 @@ Depuis ce dossier, après installation et connexion de la CLI Firebase :
 ```sh
 firebase deploy --only hosting,firestore
 ```
+
+Un push GitHub ne publie pas les règles Firestore. Après toute modification de
+`firestore.rules`, exécuter la commande ci-dessus depuis `firebase-site/`.

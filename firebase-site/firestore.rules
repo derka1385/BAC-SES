@@ -8,7 +8,6 @@ service cloud.firestore {
 
     function isTeacher() {
       return signedIn()
-        && exists(/databases/$(database)/documents/roles/$(request.auth.uid))
         && get(/databases/$(database)/documents/roles/$(request.auth.uid)).data.role == "teacher";
     }
 
