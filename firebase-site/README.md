@@ -5,23 +5,34 @@ Cette version remplace Supabase par Firebase Authentication et Cloud Firestore.
 La page d’entrée impose une connexion et propose deux parcours :
 
 - **Élève** : connexion, inscription et mot de passe oublié.
-- **Professeur** : connexion réservée à un UID possédant `roles/{uid}.role = "teacher"`.
+- **Professeur** : connexion réservée à un UID possédant `roles/{uid}.role = "teacher"`. Ce rôle peut uniquement masquer ou rendre visibles les chapitres ; il ne peut jamais modifier leur contenu, en créer ou en supprimer.
+
+Même un chapitre rendu visible reste accessible uniquement aux utilisateurs
+authentifiés. Aucun contenu de cours n’est inclus dans les fichiers publics.
 
 ## Structure
 
 - `../index.html` : copie de la page Firebase protégée utilisée comme page principale du projet.
 - `../legacy/index-supabase.html` : sauvegarde de l’ancienne version, à ne pas publier.
 - `public/` : fichiers à déployer sur Firebase Hosting.
-- `tools/import-content.html` : outil local d'import initial, jamais déployé.
+- `tools/import-content.html` : outil local de restauration réservé à l’administrateur, jamais déployé.
 - `tools/chapters-data.mjs` : contenu source des neuf chapitres, jamais déployé.
 - `firestore.rules` : règles de sécurité à conserver identiques à celles publiées dans la console.
 
-## Import initial
+## Contenu original et restauration
+
+Le contenu source comprend exactement les neuf chapitres, 40 objectifs et 144
+flashcards extraits de `legacy/index-supabase.html`. Il n’est pas généré ni
+réécrit par l’application.
+
+L’outil de restauration est réservé à un compte possédant temporairement
+`roles/{uid}.role = "admin"`. Le compte professeur ordinaire ne peut pas
+utiliser cet outil.
 
 1. Ajouter `localhost` dans Firebase Authentication > Settings > Authorized domains si nécessaire.
 2. Depuis ce dossier, lancer un serveur local : `python3 -m http.server 4173`.
 3. Ouvrir `http://localhost:4173/tools/import-content.html`.
-4. Se connecter avec le compte professeur et lancer l'import.
+4. Se connecter avec le compte administrateur de contenu et lancer la restauration.
 
 ## Aperçu local sans Firestore
 

@@ -6,9 +6,18 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function currentRole() {
+      return get(/databases/$(database)/documents/roles/$(request.auth.uid)).data.role;
+    }
+
     function isTeacher() {
       return signedIn()
-        && get(/databases/$(database)/documents/roles/$(request.auth.uid)).data.role == "teacher";
+        && currentRole() in ["teacher", "admin"];
+    }
+
+    function isContentAdmin() {
+      return signedIn()
+        && currentRole() == "admin";
     }
 
     match /roles/{userId} {
@@ -17,8 +26,14 @@ service cloud.firestore {
     }
 
     match /chapters/{chapterId} {
-      allow read: if resource.data.released == true || isTeacher();
-      allow create, update, delete: if isTeacher();
+      allow read: if signedIn()
+        && (resource.data.released == true || isTeacher());
+      allow create, delete: if isContentAdmin();
+      allow update: if isContentAdmin()
+        || (isTeacher()
+          && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(["released", "updatedAt"])
+          && request.resource.data.released is bool);
     }
 
     match /users/{userId}/state/{stateId} {

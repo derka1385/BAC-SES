@@ -107,7 +107,7 @@ function ensureLandingUI() {
         <div class="landing-brand"><span class="landing-brand-mark">SES</span><span>Réviser les SES</span></div>
         <p class="landing-eyebrow">Terminale · Programme officiel</p>
         <h1 id="landing-title">Le cours avance.<br><em>Ta maîtrise aussi.</em></h1>
-        <p class="landing-lead">Retrouve les chapitres publiés par ton professeur, révise chaque objectif et suis ta progression jusqu’au bac.</p>
+        <p class="landing-lead">Retrouve les chapitres rendus visibles par ton professeur, révise chaque objectif et suis ta progression jusqu’au bac.</p>
         <div class="landing-benefits" aria-label="Fonctionnalités">
           <span><b>01</b> Cours par objectifs</span>
           <span><b>02</b> Flashcards adaptatives</span>
@@ -152,7 +152,7 @@ function renderLanding() {
       </div>
     </div>
     <p class="landing-form-copy">${teacher
-      ? "Accède au tableau de publication et choisis quand débloquer chaque chapitre."
+      ? "Choisis simplement quels chapitres sont visibles ou masqués pour les élèves. Le contenu reste inchangé."
       : signup
         ? "Crée ton espace pour retrouver ta progression sur tous tes appareils."
         : "Connecte-toi pour retrouver les chapitres disponibles et reprendre tes révisions."}</p>
@@ -510,9 +510,9 @@ function renderTeacherPanel() {
         <span class="teacher-kicker">Espace professeur</span>
         <h3 id="teacher-title">Gestion des chapitres</h3>
       </div>
-      <span class="role-badge" id="teacher-count">${releasedCount}/${chapters.length || 9} publiés</span>
+      <span class="role-badge" id="teacher-count">${releasedCount}/${chapters.length || 9} visibles</span>
     </div>
-    <p class="acct-sub">Coche les chapitres que les élèves peuvent consulter, puis enregistre les changements.</p>
+    <p class="acct-sub">Coche uniquement les chapitres que les élèves peuvent consulter. Les cours, objectifs et flashcards ne sont jamais modifiés.</p>
     <div class="teacher-status" role="status" aria-live="polite" id="teacher-status"></div>
     ${chapters.length ? `<form id="teacher-release-form" onsubmit="teacherSaveChapterSelection(event)">
       <label class="teacher-select-all" for="teacher-select-all">
@@ -535,8 +535,8 @@ function renderTeacherPanel() {
         <button class="teacher-cancel" type="button" onclick="closeTeacherPanel()">Annuler</button>
         <button class="teacher-save" id="teacher-save" type="submit" disabled>Enregistrer</button>
       </div>
-    </form>` : '<div class="teacher-empty"><strong>Aucun chapitre importé.</strong><br>Utilise l’outil local d’import initial fourni avec le projet.</div>'}
-    <p class="teacher-help">Les élèves ne voient que les chapitres cochés. Tu peux modifier cette sélection à tout moment.</p>`;
+    </form>` : '<div class="teacher-empty"><strong>Le contenu des chapitres est indisponible dans Firebase.</strong><br>Le compte professeur ne peut ni créer, ni remplacer, ni supprimer les cours.</div>'}
+    <p class="teacher-help">Cette section agit uniquement sur la visibilité. Les élèves ne voient que les chapitres cochés.</p>`;
 
   updateTeacherSelectionUI();
 }
@@ -646,16 +646,16 @@ window.teacherSaveChapterSelection = async function teacherSaveChapterSelection(
     const freshStatus = document.getElementById("teacher-status");
     if (freshStatus) freshStatus.textContent = `${changedChapters.length} modification${changedChapters.length > 1 ? "s" : ""} enregistrée${changedChapters.length > 1 ? "s" : ""}.`;
   } catch (error) {
-    console.error("Publication Firebase :", error);
+    console.error("Visibilité des chapitres Firebase :", error);
     if (status) {
       if (error?.code === "ses/teacher-role-missing") {
         status.textContent = "Rôle professeur introuvable. Vérifie le nouvel UID dans roles.";
       } else if (error?.code === "permission-denied") {
-        status.textContent = "Firestore refuse la publication. Redéploie firestore.rules et vérifie roles/{UID}.role = teacher.";
+        status.textContent = "Firestore refuse le changement de visibilité. Vérifie les règles et roles/{UID}.role = teacher.";
       } else if (error?.code === "not-found") {
         status.textContent = "Un document de chapitre est introuvable dans Firestore.";
       } else {
-        status.textContent = `La publication a échoué${error?.code ? ` (${error.code})` : ""}.`;
+        status.textContent = `Le changement de visibilité a échoué${error?.code ? ` (${error.code})` : ""}.`;
       }
     }
   } finally {
@@ -756,7 +756,7 @@ onAuthStateChanged(auth, async (user) => {
     console.error("Initialisation Firebase :", error);
     if (!appStarted) window.startSESApp?.([]);
     const content = document.getElementById("content");
-    if (content) content.innerHTML = '<div class="welcome"><h1>Configuration Firebase incomplète.</h1><p>Vérifie que Firestore est créé, que les règles sont publiées et que les chapitres ont été importés.</p></div>';
+    if (content) content.innerHTML = '<div class="welcome"><h1>Contenu Firebase indisponible.</h1><p>Les chapitres originaux sont conservés dans la sauvegarde du projet, mais la collection chapters doit être restaurée par le propriétaire du site.</p></div>';
   } finally {
     updateAccountButton();
   }
